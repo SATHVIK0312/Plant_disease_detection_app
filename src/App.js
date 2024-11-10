@@ -46,7 +46,10 @@ const styles = {
     minHeight: "100vh",
     padding: "20px",
     border: "5px solid #4CAF50",
-    background: "linear-gradient(to right, #e0f7fa, #e1bee7)",
+    backgroundImage: "url('./background.avif')", // Path to image in public folder
+    backgroundSize: "cover",
+    backgroundRepeat: "repeat",
+    backgroundColor: "rgba(224, 247, 250, 0.8)", // Slight tint for blend effect
   },
   navbar: {
     width: "100%",
