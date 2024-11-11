@@ -33,26 +33,15 @@ function ImageUploader() {
         let response=await fetch('https://plant-disease-backend.vercel.app/fetchData');
         let result=await response.json();
         while (result.ready==0) {
-          console.log("hjdsjhdj");
             response=await fetch('https://plant-disease-backend.vercel.app/fetchData');
             result=await response.json();
         }
         setPrediction(result.data);
-        // const response = await fetch("http://127.0.0.1:5000/predict", {
-        //   method: "POST",
-        //   body: formData,
-        // });
-
-        // if (response.ok) {
-        //   const data = await response.json();
-        //   setPrediction(data.prediction); // Set the prediction result from the response
-        // } else {
-        //   console.error("Error in fetching prediction:", response.statusText);
-        //   setPrediction("Error fetching prediction");
-        // }
       } catch (error) {
         console.error("Error uploading image:", error);
         setPrediction("Error fetching prediction");
+      } finally {
+        setUpload(false);
       }
     }
   };
@@ -76,16 +65,18 @@ function ImageUploader() {
             <img src={image} alt="Uploaded" style={styles.image} />
           </div>
         )}
-        
-        {(prediction!="")?(
+
+        {upload ? (
+          <div style={styles.loadingContainer}>
+            <div style={styles.spinner}></div>
+            <div style={styles.loadingText}>Loading...</div>
+          </div>
+        ) : prediction ? (
           <div style={styles.predictionContainer}>
             <h3 style={styles.predictionText}>Predicted Disease: {prediction}</h3>
           </div>
-        ):(
-          ((upload)?
-            (<div>Loading</div>):
-            (<div>Please Upload image to view</div>)
-        )
+        ) : (
+          <div>Please Upload an image to view</div>
         )}
       </div>
     </div>
@@ -163,7 +154,7 @@ const styles = {
   },
   predictionContainer: {
     textAlign: "center",
-    marginTop: "20px",
+    marginTop: "30px", // Added margin for more space
     padding: "15px",
     border: "1px solid #4CAF50",
     borderRadius: "12px",
@@ -176,6 +167,25 @@ const styles = {
     color: "#333",
     fontWeight: "bold",
   },
+  loadingContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    marginTop: "30px",
+  },
+  loadingText: {
+    marginTop: "10px",
+    fontSize: "1.2rem",
+    color: "#6c757d",
+  },
+  spinner: {
+    width: "40px",
+    height: "40px",
+    border: "4px solid rgba(0, 0, 0, 0.1)",
+    borderRadius: "50%",
+    borderTopColor: "#4CAF50",
+    animation: "spin 1s ease infinite",
+  },
   imageText: {
     animation: "fadeInUp 1.5s ease",
   },
@@ -185,6 +195,10 @@ const styles = {
     borderRadius: "12px",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
     transition: "transform 0.3s ease",
+  },
+  "@keyframes spin": {
+    "0%": { transform: "rotate(0deg)" },
+    "100%": { transform: "rotate(360deg)" },
   },
 };
 
