@@ -5,6 +5,7 @@ function ImageUploader() {
   const [image, setImage] = useState(null);
   const [upload, setUpload] = useState(false);
   const [prediction, setPrediction] = useState(""); // State to hold the prediction result
+  const [showTeamInfo, setShowTeamInfo] = useState(false); // State for team info visibility
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -30,11 +31,11 @@ function ImageUploader() {
 
       // Use fetch to send the request to the backend
       try {
-        let response=await fetch('https://plant-disease-backend.vercel.app/fetchData');
-        let result=await response.json();
-        while (result.ready==0) {
-            response=await fetch('https://plant-disease-backend.vercel.app/fetchData');
-            result=await response.json();
+        let response = await fetch('https://plant-disease-backend.vercel.app/fetchData');
+        let result = await response.json();
+        while (result.ready == 0) {
+          response = await fetch('https://plant-disease-backend.vercel.app/fetchData');
+          result = await response.json();
         }
         setPrediction(result.data);
       } catch (error) {
@@ -44,6 +45,10 @@ function ImageUploader() {
         setUpload(false);
       }
     }
+  };
+
+  const toggleTeamInfo = () => {
+    setShowTeamInfo((prev) => !prev); // Toggle the team info visibility
   };
 
   return (
@@ -73,10 +78,27 @@ function ImageUploader() {
           </div>
         ) : prediction ? (
           <div style={styles.predictionContainer}>
-            <h3 style={styles.predictionText}>Predicted Disease: {prediction}</h3>
+            <h3 style={styles.predictionText}>Prediction: {prediction}</h3>
           </div>
         ) : (
           <div>Please Upload an image to view</div>
+        )}
+
+        {/* Button to toggle team info */}
+        <button onClick={toggleTeamInfo} style={styles.teamButton}>
+          {showTeamInfo ? "Hide Team Info" : "Show Team Info"}
+        </button>
+        
+        {/* Conditionally render team info */}
+        {showTeamInfo && (
+          <div style={styles.teamInfoContainer}>
+            <h3 style={styles.teamTitle}>Team Information</h3>
+            <ul style={styles.teamList}>
+              <li>SANGARAJU SAI SATHVIK VARMA</li>
+              <li>ABHINAV SAI GOGULA</li>
+              <li>TANMAIE USHA SHREE UPPARI</li>
+            </ul>
+          </div>
         )}
       </div>
     </div>
@@ -91,10 +113,10 @@ const styles = {
     minHeight: "100vh",
     padding: "20px",
     border: "5px solid #4CAF50",
-    backgroundImage: "url('./background.avif')", 
+    backgroundImage: "url('./background.avif')",
     backgroundSize: "cover",
     backgroundRepeat: "repeat",
-    backgroundColor: "rgba(224, 247, 250, 0.8)", 
+    backgroundColor: "rgba(224, 247, 250, 0.8)",
   },
   navbar: {
     width: "100%",
@@ -154,7 +176,7 @@ const styles = {
   },
   predictionContainer: {
     textAlign: "center",
-    marginTop: "30px", // Added margin for more space
+    marginTop: "30px",
     padding: "15px",
     border: "1px solid #4CAF50",
     borderRadius: "12px",
@@ -196,10 +218,54 @@ const styles = {
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
     transition: "transform 0.3s ease",
   },
-  "@keyframes spin": {
-    "0%": { transform: "rotate(0deg)" },
-    "100%": { transform: "rotate(360deg)" },
+
+  teamButton: {
+    position: "absolute", // Position the button absolutely
+    top: "20px",          // Distance from the top of the screen
+    right: "20px",        // Distance from the right of the screen
+    padding: "10px 20px",
+    backgroundColor: "#ffffff",  // White background
+    color: "#4CAF50",            // Green text color
+    border: "2px solid #4CAF50", // Green border
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "1rem",
+    transition: "background-color 0.3s ease",
+    marginTop: '40px'
   },
+
+  teamButtonhover: {
+    backgroundColor: "#f1f1f1"  // Slight hover effect to change background color
+  },
+
+  teamInfoContainer: {
+    marginTop: "30px",
+    padding: "15px",
+    border: "1px solid #6c757d",
+    borderRadius: "12px",
+    backgroundColor: "#ffffff",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+    width: "fit-content",
+    position: "absolute",
+    right: "20px",
+    top: "100px",
+  },
+
+  teamTitle: {
+    fontSize: "1.2rem",
+    fontWeight: "bold",
+    color: "#343a40",
+  },
+
+  teamList: {
+    marginTop: "10px",
+    listStyleType: "none",
+    padding: "0",
+  },
+
+  teamListItem: {
+    marginBottom: "10px",  // Add space between team members
+  }
 };
 
 export default ImageUploader;
