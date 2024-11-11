@@ -3,14 +3,57 @@ import { saveAs } from "file-saver";
 
 function ImageUploader() {
   const [image, setImage] = useState(null);
+  const [upload, setUpload] = useState(false);
+  const [prediction, setPrediction] = useState(""); // State to hold the prediction result
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      setUpload(true);
+      setPrediction("");
+      await fetch('https://plant-disease-backend.vercel.app/updateData', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ "ready": false, "data": [] }),
+      });
       const imageUrl = URL.createObjectURL(file);
       setImage(imageUrl);
+      
       // Automatically download the image
       saveAs(file, file.name);
+
+      // Prepare the image to send to the backend
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Use fetch to send the request to the backend
+      try {
+        let response=await fetch('https://plant-disease-backend.vercel.app/fetchData');
+        let result=await response.json();
+        while (result.ready==0) {
+          console.log("hjdsjhdj");
+            response=await fetch('https://plant-disease-backend.vercel.app/fetchData');
+            result=await response.json();
+        }
+        setPrediction(result.data);
+        // const response = await fetch("http://127.0.0.1:5000/predict", {
+        //   method: "POST",
+        //   body: formData,
+        // });
+
+        // if (response.ok) {
+        //   const data = await response.json();
+        //   setPrediction(data.prediction); // Set the prediction result from the response
+        // } else {
+        //   console.error("Error in fetching prediction:", response.statusText);
+        //   setPrediction("Error fetching prediction");
+        // }
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        setPrediction("Error fetching prediction");
+      }
     }
   };
 
@@ -33,6 +76,17 @@ function ImageUploader() {
             <img src={image} alt="Uploaded" style={styles.image} />
           </div>
         )}
+        
+        {(prediction!="")?(
+          <div style={styles.predictionContainer}>
+            <h3 style={styles.predictionText}>Predicted Disease: {prediction}</h3>
+          </div>
+        ):(
+          ((upload)?
+            (<div>Loading</div>):
+            (<div>Please Upload image to view</div>)
+        )
+        )}
       </div>
     </div>
   );
@@ -46,10 +100,10 @@ const styles = {
     minHeight: "100vh",
     padding: "20px",
     border: "5px solid #4CAF50",
-    backgroundImage: "url('./background.avif')", // Path to image in public folder
+    backgroundImage: "url('./background.avif')", 
     backgroundSize: "cover",
     backgroundRepeat: "repeat",
-    backgroundColor: "rgba(224, 247, 250, 0.8)", // Slight tint for blend effect
+    backgroundColor: "rgba(224, 247, 250, 0.8)", 
   },
   navbar: {
     width: "100%",
@@ -107,6 +161,21 @@ const styles = {
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
     width: "fit-content",
   },
+  predictionContainer: {
+    textAlign: "center",
+    marginTop: "20px",
+    padding: "15px",
+    border: "1px solid #4CAF50",
+    borderRadius: "12px",
+    backgroundColor: "#e6f7e6",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+    width: "fit-content",
+  },
+  predictionText: {
+    fontSize: "1.2rem",
+    color: "#333",
+    fontWeight: "bold",
+  },
   imageText: {
     animation: "fadeInUp 1.5s ease",
   },
@@ -117,47 +186,6 @@ const styles = {
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
     transition: "transform 0.3s ease",
   },
-};
-
-// CSS Animations
-const keyframes = `
-  @keyframes textGlow {
-    0%, 100% {
-      text-shadow: 0 0 5px #ffffff, 0 0 10px #4CAF50, 0 0 15px #4CAF50;
-    }
-    50% {
-      text-shadow: 0 0 20px #ffffff, 0 0 30px #4CAF50, 0 0 40px #4CAF50;
-    }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-15px); }
-    60% { transform: translateY(-10px); }
-  }
-  @keyframes fadeInUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-`;
-
-// Adding keyframes to document head
-const styleSheet = document.createElement("style");
-styleSheet.type = "text/css";
-styleSheet.innerText = keyframes;
-document.head.appendChild(styleSheet);
-
-// Adding hover effects for input and image
-styles.input[':hover'] = {
-  borderColor: "#343a40",
-  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-};
-
-styles.image[':hover'] = {
-  transform: "scale(1.05)",
 };
 
 export default ImageUploader;
